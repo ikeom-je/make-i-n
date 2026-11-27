@@ -53,9 +53,10 @@ function render() {
   document.documentElement.lang = state.lang;
   document.title = `${ctx().t(state.data.profile.name)} — ${ctx().t(state.model.title)}`;
   $$('[data-genmedia-card]').forEach((f) => {
-    if (keep[f.dataset.slot] !== undefined && !f.dataset.justGenerated) f.elements.prompt.value = keep[f.dataset.slot];
+    if (keep[f.dataset.slot] !== undefined) f.elements.prompt.value = keep[f.dataset.slot];
     if (!state.genmedia.configured) setStatus(f, `GenMedia: ${state.genmedia.reason ?? 'not configured'}`, 'warn');
   });
+  paintBusy();
   applyView();
 }
 
@@ -116,31 +117,50 @@ function setStatus(form, text, tone = '') {
   el.dataset.tone = tone;
 }
 
-async function generate(form) {
+// 生成中の状態はフォーム(DOM)ではなく state に持つ。言語切替や別カードの完了で再描画されても
+// 進捗表示とボタン無効化を復元し、課金リクエストの二重送信を防ぐ。
+const busy = new Map();
+const cardFor = (slot) => $(`[data-genmedia-card][data-slot="${CSS.escape(slot)}"]`);
+
+function paintBusy() {
   const c = ctx();
+  for (const [slot, started] of busy) {
+    const form = cardFor(slot);
+    if (!form) continue;
+    $('button[type=submit]', form).disabled = true;
+    setStatus(form, `${c.t(UI.generating)} ${Math.round((Date.now() - started) / 1000)}s`, 'busy');
+  }
+}
+
+async function generate(form) {
+  const slot = form.dataset.slot;
+  if (busy.has(slot)) return;
   const body = {
     kind: form.dataset.kind,
-    slot: form.dataset.slot,
+    slot,
     prompt: form.elements.prompt.value,
     voice: form.elements.voice?.value,
     aspectRatio: form.elements.aspectRatio?.value,
   };
-  const button = $('button[type=submit]', form);
-  button.disabled = true;
-  const started = Date.now();
-  setStatus(form, c.t(UI.generating), 'busy');
-  const timer = setInterval(() => setStatus(form, `${c.t(UI.generating)} ${Math.round((Date.now() - started) / 1000)}s`, 'busy'), 1000);
+  busy.set(slot, Date.now());
+  paintBusy();
+  const timer = setInterval(paintBusy, 1000);
+  let result;
   try {
     const json = await getJson('/api/genmedia', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     state.data.media = json.media;
-    render();
-    const fresh = $(`[data-genmedia-card][data-slot="${CSS.escape(body.slot)}"]`);
-    if (fresh) setStatus(fresh, state.lang === 'ja' ? 'ページに反映しました' : 'Updated on the page', 'ok');
+    result = { text: state.lang === 'ja' ? 'ページに反映しました' : 'Updated on the page', tone: 'ok', rerender: true };
   } catch (err) {
-    setStatus(form, err.message, 'error');
+    result = { text: err.message, tone: 'error' };
   } finally {
     clearInterval(timer);
-    button.disabled = false;
+    busy.delete(slot);
+  }
+  if (result.rerender) render();
+  const fresh = cardFor(slot);
+  if (fresh) {
+    $('button[type=submit]', fresh).disabled = false;
+    setStatus(fresh, result.text, result.tone);
   }
 }
 

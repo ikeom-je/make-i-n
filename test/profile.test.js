@@ -18,3 +18,8 @@ test('引用符で囲めば正しい多言語テキストとして通る', () =>
 test('name の無い profile は不正', () => {
   assert.equal(validateProfile({}).ok, false);
 });
+
+test('media 定義の壊れた profile 参照を検出する', () => {
+  const { errors } = validateProfile({ name: 'x', media: { n: { kind: 'tts', text: '$.narration.fr' } } });
+  assert.match(errors.join(), /\$\.narration\.fr/);
+});

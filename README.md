@@ -38,7 +38,11 @@ npm run export:pptx -- lab-reunion-2026 en out.pptx
 - リポジトリが管理するのは **フレームワーク(パーツ・表現・ビュー・言語・GenMedia アダプタ)だけ**です。
 - 自己紹介する人のデータ・認証情報・非公開データは **すべて `data/private/` 以下**に置きます
   (profile / talks / media / generated / exports / screenshots / `.env`)。`data/private/` は .gitignore 済み。
-- データ形式は YAML / JSON(`profile.yaml` または `profile.json`、`talks/<id>.yaml|json`)。
+- データ形式は YAML / JSON / JSONL / Markdown。
+  - `profile.(yaml|json|md)` と `profile/` ディレクトリ(ファイル名がキー。例 `profile/timeline.jsonl` → 経歴、`profile/narration.md` → 原稿)
+  - JSONL は1行1項目(空行・`//` 行は無視)。Markdown は frontmatter + 本文で、本文の `# ja` / `# en` 見出しで日英を分けられる
+  - 任意の名前のファイルは `"@file:profile/career.jsonl"` のように値として読み込める(データディレクトリ内のみ)
+  - `talks/<id>.(yaml|json|md)`(id はファイル名)
 - `data/example/` は動作確認用の架空人物サンプルです。
 
 ## 自分のデータを作る

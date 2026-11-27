@@ -12,8 +12,10 @@ let failed = 0;
 const p = validateProfile(profile);
 console.log(`${p.ok ? 'OK ' : 'NG '} profile${p.ok ? '' : `\n  - ${p.errors.join('\n  - ')}`}`);
 if (!p.ok) failed++;
-for (const { id } of store.listTalks()) {
-  const { ok, errors } = validateTalk(store.loadTalk(id), profile, registry);
+for (const { id, declaredId } of store.listTalks()) {
+  const { ok: valid, errors } = validateTalk(store.loadTalk(id), profile, registry);
+  if (declaredId && declaredId !== id) errors.push(`id "${declaredId}" がファイル名 "${id}" と一致しません`);
+  const ok = valid && errors.length === 0;
   console.log(`${ok ? 'OK ' : 'NG '} ${id}${ok ? '' : `\n  - ${errors.join('\n  - ')}`}`);
   if (!ok) failed++;
 }

@@ -58,3 +58,20 @@ test('profile 内の HTML はエスケープされて描画される', () => {
   assert.doesNotMatch(out, /<script>/);
   assert.match(out, /&lt;script&gt;/);
 });
+
+test('CTA のリンク先は http(s)/mailto/相対パスだけを許し、javascript: はリンクにしない', async () => {
+  const { safeHref } = await import('../src/components/cta.js');
+  assert.equal(safeHref('https://cloud.google.com'), 'https://cloud.google.com');
+  assert.equal(safeHref('mailto:a@example.com'), 'mailto:a@example.com');
+  assert.equal(safeHref('javascript:alert(1)'), null);
+  assert.equal(safeHref('//evil.example'), null);
+  const r = registry();
+  const model = normalizeTalk({ id: 'c', sections: [{ component: 'cta', props: { headline: 'h', button: 'b', href: 'javascript:alert(1)' } }] }, profile, r);
+  assert.doesNotMatch(renderTalk(model, r, createContext({ lang: 'ja', profile })), /javascript:/);
+});
+
+test('profile の参照はプロトタイプのプロパティ($.constructor など)を辿らない', async () => {
+  const { validateTalk } = await import('../src/core/talk.js');
+  const { ok } = validateTalk({ id: 'x', sections: [{ component: 'quote', props: { text: '$.constructor' } }] }, profile, registry());
+  assert.equal(ok, false);
+});

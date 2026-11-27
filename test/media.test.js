@@ -47,3 +47,19 @@ test('media 定義の text は profile の原稿を参照できる', () => {
   const store = createDataStore(dir);
   assert.equal(store.mediaFor(store.loadProfile()).n.text, 'Hello');
 });
+
+test('同じ瞬間に2回生成しても、ファイル名が衝突して上書きされない', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'intro-'));
+  fs.writeFileSync(path.join(dir, 'profile.yaml'), 'name: x\n');
+  const store = createDataStore(dir);
+  const realNow = Date.prototype.toISOString;
+  Date.prototype.toISOString = () => '2026-01-01T00:00:00.000Z';
+  try {
+    const a = store.saveGenerated('s', { kind: 'image', ext: 'png', data: Buffer.from('a') });
+    const b = store.saveGenerated('s', { kind: 'image', ext: 'png', data: Buffer.from('b') });
+    assert.notEqual(a.file, b.file);
+    assert.equal(fs.readFileSync(path.join(dir, a.file), 'utf8'), 'a');
+  } finally {
+    Date.prototype.toISOString = realNow;
+  }
+});

@@ -133,7 +133,8 @@ export function createVertexClient({
         cur = await (await request('GET', `${base}/interactions/${id}`)).json();
       }
       if (isFailed(cur)) throw new GenMediaError(`動画生成に失敗しました: ${JSON.stringify(cur.error ?? cur.status).slice(0, 300)}`, { code: 'FAILED' });
-      const video = (cur.steps ?? []).flatMap((s) => s.content ?? []).find((c) => c.type === 'video' && c.data);
+      const contents = [...(cur.steps ?? []).flatMap((s) => s.content ?? []), ...(cur.outputs ?? []), ...(cur.output?.content ?? [])];
+      const video = contents.find((c) => c.type === 'video' && c.data);
       if (!video) throw new GenMediaError('動画データが見つかりませんでした', { code: 'NO_OUTPUT' });
       return { mime: video.mime_type ?? video.mimeType ?? 'video/mp4', ext: 'mp4', data: Buffer.from(video.data, 'base64') };
     },
@@ -155,6 +156,8 @@ export function createVertexClient({
         }
       }
       if (chunks.length === 0) throw new GenMediaError('音声が返りませんでした', { code: 'NO_OUTPUT' });
+      const pcm = parsePcmMime(mime);
+      if (pcm) return { mime: 'audio/wav', ext: 'wav', data: pcmToWav(Buffer.concat(chunks), pcm) };
       return { mime, ext: mime.includes('wav') ? 'wav' : 'mp3', data: Buffer.concat(chunks) };
     },
   };
@@ -178,8 +181,14 @@ function isRecitation(event) {
 export async function* readSse(stream) {
   const decoder = new TextDecoder();
   let buf = '';
+  let pendingCr = '';
   for await (const chunk of stream) {
-    buf += decoder.decode(chunk, { stream: true });
+    // SSE は CRLF / CR 改行も許すため LF に揃えてから境界を探す。チャンク末尾の \r は
+    // 次チャンク先頭の \n と組になる可能性があるので、次回まで保留する。
+    let text = pendingCr + decoder.decode(chunk, { stream: true });
+    pendingCr = text.endsWith('\r') ? '\r' : '';
+    if (pendingCr) text = text.slice(0, -1);
+    buf += text.replace(/\r\n?/g, '\n');
     let idx;
     while ((idx = buf.indexOf('\n\n')) !== -1) {
       const raw = buf.slice(0, idx);
@@ -188,8 +197,10 @@ export async function* readSse(stream) {
       if (ev) yield ev;
     }
   }
-  const ev = parseSseEvent(buf);
-  if (ev) yield ev;
+  for (const raw of (buf + pendingCr).replace(/\r/g, '\n').split('\n\n')) {
+    const ev = parseSseEvent(raw);
+    if (ev) yield ev;
+  }
 }
 
 function parseSseEvent(raw) {

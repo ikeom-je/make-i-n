@@ -122,3 +122,32 @@ test('音楽生成で音声が1つも返らなければエラーになる', asyn
   const f = fakeFetch(() => sse([{ event_type: 'interaction.complete' }]));
   await assert.rejects(client(f).generateMusic({ prompt: 'x' }), (e) => e.code === 'NO_OUTPUT');
 });
+
+test('CRLF 区切りの SSE でもイベントを分けて読み、チャンク境界の CR/LF 分断にも耐える', async () => {
+  const body = ['{"delta":{"type":"audio","mime_type":"audio/mpeg","data":"' + b64('A') + '"}}', '{"delta":{"type":"audio","mime_type":"audio/mpeg","data":"' + b64('B') + '"}}']
+    .map((d) => `event: content.delta\r\ndata: ${d}\r\n\r\n`).join('');
+  const bytes = new TextEncoder().encode(body);
+  const cut = body.indexOf('\r\n\r\n') + 1; // \r と \n の間で分割する
+  const stream = new ReadableStream({ start(c) { c.enqueue(bytes.subarray(0, cut)); c.enqueue(bytes.subarray(cut)); c.close(); } });
+  const f = fakeFetch(() => new Response(stream, { status: 200 }));
+  const out = await client(f).generateMusic({ prompt: 'x' });
+  assert.equal(out.data.toString(), 'AB');
+});
+
+test('音楽が生 PCM で返った場合は WAV に包んで保存する', async () => {
+  const f = fakeFetch(() => sse([{ delta: { type: 'audio', mime_type: 'audio/L16;rate=48000', data: b64('pcm') } }]));
+  const out = await client(f).generateMusic({ prompt: 'x' });
+  assert.equal(out.ext, 'wav');
+  assert.equal(out.data.readUInt32LE(24), 48000);
+});
+
+test('動画データが outputs 側に返る形式でも取り出せる', async () => {
+  const f = fakeFetch((call) => (call.method === 'POST' ? json({ id: 'i' })
+    : json({ id: 'i', status: 'completed', outputs: [{ type: 'video', mime_type: 'video/mp4', data: b64('v') }] })));
+  assert.equal((await client(f).generateVideo({ prompt: 'x' })).data.toString(), 'v');
+});
+
+test('動画生成が失敗状態で終わればエラーになる', async () => {
+  const f = fakeFetch((call) => (call.method === 'POST' ? json({ id: 'i' }) : json({ id: 'i', status: 'failed', error: { message: 'quota' } })));
+  await assert.rejects(client(f).generateVideo({ prompt: 'x' }), (e) => e.code === 'FAILED');
+});

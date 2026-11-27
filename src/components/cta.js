@@ -1,6 +1,12 @@
 import { esc } from '../core/i18n.js';
 import { mediaVisual } from './util.js';
 
+// javascript: などのスキームを踏ませないよう、リンク先は http(s) / mailto / 相対パスに限る。
+export function safeHref(href) {
+  const h = String(href ?? '').trim();
+  return /^(https?:|mailto:|\/(?!\/)|#)/i.test(h) ? h : null;
+}
+
 function merged(p) {
   return { headline: p.message?.headline, button: p.message?.button, href: p.message?.href, ...Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined)) };
 }
@@ -14,8 +20,9 @@ export default {
   render(p, ctx) {
     const m = merged(p);
     const bg = m.background ? `<div class="cta-bg">${mediaVisual(m.background, ctx, { background: true })}</div>` : '';
+    const href = safeHref(ctx.t(m.href));
     const btn = m.button
-      ? (m.href ? `<a class="pill pill-primary pill-lg" href="${esc(m.href)}">${ctx.tx(m.button)}</a>` : `<span class="pill pill-primary pill-lg">${ctx.tx(m.button)}</span>`)
+      ? (href ? `<a class="pill pill-primary pill-lg" href="${esc(href)}">${ctx.tx(m.button)}</a>` : `<span class="pill pill-primary pill-lg">${ctx.tx(m.button)}</span>`)
       : '';
     return `${bg}<div class="cta-body"><h2 class="cta-headline">${ctx.tx(m.headline)}</h2>${btn}</div>`;
   },

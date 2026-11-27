@@ -15,7 +15,7 @@ export function getPath(obj, ref) {
   if (ref === '$') return obj;
   let cur = obj;
   for (const key of ref.slice(2).split('.')) {
-    if (cur === null || typeof cur !== 'object' || !(key in cur)) return undefined;
+    if (cur === null || typeof cur !== 'object' || !Object.hasOwn(cur, key)) return undefined;
     cur = cur[key];
   }
   return cur;

@@ -1,6 +1,7 @@
 // profile(人物データ)の検証。
 
 import { LANGS } from './i18n.js';
+import { collectBrokenRefs } from './resolve.js';
 
 // YAML のフローマップ { ja: a, b, en: c } で値にカンマを書くと余分なキーに化けるため、
 // ja/en 以外のキーが混ざった多言語オブジェクトを検出する。
@@ -20,5 +21,6 @@ export function validateProfile(profile) {
     keys.forEach((k) => walk(v[k], where ? `${where}.${k}` : k));
   };
   walk(profile, '');
+  for (const ref of collectBrokenRefs(profile.media ?? {}, profile)) errors.push(`media: profile に参照先がありません ${ref}`);
   return { ok: errors.length === 0, errors };
 }

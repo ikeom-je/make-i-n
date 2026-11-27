@@ -23,6 +23,8 @@ data/<private|example>/
 | `scripts/` | `validate`(全 talk 検証)・`export-pptx`(CLI 書き出し) | Node |
 
 ## データモデル
+個人データは `data/private/` に YAML / JSON / JSONL / Markdown で置く(`server/formats.js` が読む)。
+profile は `profile.(yaml|json|md)` と `profile/<key>.<ext>`(ファイル名がキー)を合成し、`"@file:<path>"` で任意ファイルを取り込める。
 - **profile**: `name / affiliation / role / tagline / timeline[] / highlights{id} / messages{id} / narration / media{slot}`。
   テキストは `{ja, en}` か単一文字列。
 - **talk**: `id / title / theme / defaultLang / order / sections[]`。section は
@@ -53,4 +55,4 @@ data/<private|example>/
 | 音楽 | `interactions`(`stream: true`) | SSE の `delta.type=audio` を連結。recitation は言い換えを促すエラー |
 
 共通: `x-goog-user-project` ヘッダ、429/503 は指数バックオフで再試行、トークンは `gcloud auth print-access-token` を5分キャッシュ。
-安全策: 127.0.0.1 バインド、POST は同一オリジンのみ、スロット名は `[\w-]+`、メディア配信は `media/`・`generated/` 配下のみ。
+安全策: 127.0.0.1 バインド、Host はループバックのみ(DNS rebinding 対策)、POST は同一オリジンかつ application/json のみ、スロット名は `[\w-]+`、メディア配信は `media/`・`generated/` 配下のみ。

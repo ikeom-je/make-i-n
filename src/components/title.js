@@ -51,6 +51,7 @@ export default {
     kit.text(slide, sub, { x: 0.8, y: 3.25, w: textW, h: 0.6, fontSize: 20, color: kit.colors.sub });
     kit.text(slide, p.tagline, { x: 0.8, y: 4.2, w: textW, h: 1.2, fontSize: 24, color: kit.colors.blue, bold: true });
     if (img) slide.addImage({ path: img, x: 7.7, y: 1.2, w: 5.0, h: 5.0, sizing: { type: 'cover', w: 5.0, h: 5.0 } });
-    if (ctx.profile?.narration) slide.addNotes(ctx.t(ctx.profile.narration));
+    // 発表者ノートにはナレーション原稿を入れる(section.notes があればそちらを優先)。
+    if (p.narration && !section.notes && ctx.profile?.narration) slide.addNotes(ctx.t(ctx.profile.narration));
   },
 };

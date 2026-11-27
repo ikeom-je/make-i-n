@@ -111,3 +111,54 @@ test('生成に成功すると generated/ に保存され、そのスロット�
     assert.equal(await served.text(), 'img:blocks');
   });
 });
+
+test('不正なパーセントエンコードの URL でもサーバーは落ちず 400 を返す', async () => {
+  await withServer({ client: null }, async (base) => {
+    assert.equal((await fetch(`${base}/%ZZ`)).status, 400);
+    assert.equal((await fetch(`${base}/api/talks`)).status, 200, 'その後も応答する');
+  });
+});
+
+test('ループバック以外の Host 宛て(DNS rebinding)は拒否する', async () => {
+  await withServer({ client: fakeClient }, async (base) => {
+    const port = new URL(base).port;
+    const res = await new Promise((resolve) => {
+      http.get({ host: '127.0.0.1', port, path: '/api/talks/sample-intro', headers: { Host: `evil.example:${port}` } }, resolve);
+    });
+    assert.equal(res.statusCode, 421);
+    res.resume();
+  });
+});
+
+test('生成 API は JSON 以外の Content-Type と壊れた JSON を 4xx で拒否する', async () => {
+  await withServer({ client: fakeClient }, async (base) => {
+    const form = await fetch(`${base}/api/genmedia`, { method: 'POST', headers: { 'content-type': 'text/plain' }, body: '{}' });
+    assert.equal(form.status, 415);
+    const broken = await fetch(`${base}/api/genmedia`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{' });
+    assert.equal(broken.status, 400);
+  });
+});
+
+test('Origin が無くても Sec-Fetch-Site が cross-site なら拒否する', async () => {
+  await withServer({ client: fakeClient }, async (base) => {
+    const res = await fetch(`${base}/api/genmedia`, { method: 'POST', headers: { 'content-type': 'application/json', 'sec-fetch-site': 'cross-site' }, body: JSON.stringify({ kind: 'image', slot: 'a', prompt: 'x' }) });
+    assert.equal(res.status, 403);
+  });
+});
+
+test('上流の著作権フィルタ停止は 422、その他の上流失敗は 502 で返す', async () => {
+  const { GenMediaError } = await import('../server/genmedia/vertex.js');
+  const failing = (code) => ({ model: {}, generateImage: async () => { throw new GenMediaError('x', { code, status: 403 }); } });
+  for (const [code, status] of [['RECITATION', 422], ['HTTP_ERROR', 502]]) {
+    await withServer({ client: failing(code) }, async (base) => {
+      const res = await fetch(`${base}/api/genmedia`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: 'image', slot: 'a', prompt: 'x' }) });
+      assert.equal(res.status, status);
+    });
+  }
+});
+
+test('範囲外の Range 指定は 416', async () => {
+  await withServer({ client: null }, async (base) => {
+    assert.equal((await fetch(`${base}/media/media/clip.mp4`, { headers: { Range: 'bytes=50-60' } })).status, 416);
+  });
+});

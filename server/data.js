@@ -3,9 +3,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import YAML from 'yaml';
 import { mergeMedia } from '../src/core/media.js';
 import { resolveRefs } from '../src/core/resolve.js';
+import { DATA_EXTS, findFile, loadProfile, readStructured } from './formats.js';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -14,19 +14,6 @@ export function resolveDataDir(env = process.env) {
   if (env.DATA_DIR) return path.resolve(ROOT, env.DATA_DIR);
   const priv = path.join(ROOT, 'data/private');
   return fs.existsSync(path.join(priv, 'talks')) ? priv : path.join(ROOT, 'data/example');
-}
-
-function readStructured(file) {
-  const text = fs.readFileSync(file, 'utf8');
-  return file.endsWith('.json') ? JSON.parse(text) : YAML.parse(text);
-}
-
-function findFile(dir, base) {
-  for (const ext of ['.yaml', '.yml', '.json']) {
-    const f = path.join(dir, base + ext);
-    if (fs.existsSync(f)) return f;
-  }
-  return null;
 }
 
 export const MEDIA_ROOTS = ['media', 'generated'];
@@ -45,26 +32,27 @@ export function createDataStore(dataDir = resolveDataDir()) {
   const store = {
     dataDir,
     loadProfile() {
-      const f = findFile(dataDir, 'profile');
-      if (!f) throw new Error(`profile.(yaml|json) がありません: ${dataDir}`);
-      return readStructured(f);
+      return loadProfile(dataDir);
     },
+    // talk の id はファイル名(URL と1対1にするため)。中の id と食い違えば検証で知らせる。
     listTalks() {
       const dir = path.join(dataDir, 'talks');
       if (!fs.existsSync(dir)) return [];
       return fs.readdirSync(dir)
-        .filter((f) => /\.(ya?ml|json)$/.test(f))
+        .filter((f) => DATA_EXTS.includes(path.extname(f).toLowerCase()) && /^[\w-]+$/.test(path.basename(f, path.extname(f))))
         .sort()
         .map((f) => {
           const talk = readStructured(path.join(dir, f));
-          return { id: talk.id ?? f.replace(/\.\w+$/, ''), title: talk.title ?? null, order: talk.order ?? 100 };
+          return { id: path.basename(f, path.extname(f)), declaredId: talk.id ?? null, title: talk.title ?? null, order: talk.order ?? 100 };
         })
         .sort((a, b) => a.order - b.order);
     },
     loadTalk(id) {
       if (!/^[\w-]+$/.test(id)) return null;
       const f = findFile(path.join(dataDir, 'talks'), id);
-      return f ? readStructured(f) : null;
+      if (!f) return null;
+      const talk = readStructured(f);
+      return { ...talk, id: talk.id ?? id };
     },
     loadManifest() {
       try {
@@ -77,7 +65,8 @@ export function createDataStore(dataDir = resolveDataDir()) {
       const dir = path.join(dataDir, 'generated');
       fs.mkdirSync(dir, { recursive: true });
       const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const file = `generated/${slot}-${stamp}.${ext}`;
+      let file = `generated/${slot}-${stamp}.${ext}`;
+      for (let n = 2; fs.existsSync(path.join(dataDir, file)); n++) file = `generated/${slot}-${stamp}-${n}.${ext}`;
       fs.writeFileSync(path.join(dataDir, file), data);
       const manifest = store.loadManifest();
       manifest.slots ??= {};

@@ -55,6 +55,9 @@ function underDir(dir, rel) {
 }
 
 async function readJson(req) {
+  if (!/^application\/json\b/i.test(req.headers['content-type'] ?? '')) {
+    throw new GenMediaError('Content-Type は application/json にしてください', { status: 415 });
+  }
   let size = 0;
   const chunks = [];
   for await (const c of req) {
@@ -62,8 +65,15 @@ async function readJson(req) {
     if (size > MAX_BODY) throw new GenMediaError('リクエストが大きすぎます', { status: 413 });
     chunks.push(c);
   }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+  } catch {
+    throw new GenMediaError('JSON が不正です', { status: 400 });
+  }
 }
+
+// DNS rebinding で外部サイトから個人データや課金 API に届かないよう、Host はループバックに限る。
+const LOOPBACK = /^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i;
 
 // 127.0.0.1 バインドに加え、別オリジンのページからの POST(CSRF)で課金 API を叩かれないようにする。
 function sameOrigin(req) {
@@ -76,17 +86,23 @@ function sameOrigin(req) {
   }
 }
 
+const ASPECTS = ['16:9', '9:16', '1:1', '4:3', '3:4', '3:2', '2:3', '21:9'];
 const KIND_HANDLERS = {
-  image: (c, b) => c.generateImage({ prompt: b.prompt, aspectRatio: b.aspectRatio }),
-  tts: (c, b) => c.synthesizeSpeech({ text: b.prompt, voice: b.voice }),
+  image: (c, b) => c.generateImage({ prompt: b.prompt, aspectRatio: ASPECTS.includes(b.aspectRatio) ? b.aspectRatio : undefined }),
+  tts: (c, b) => c.synthesizeSpeech({ text: b.prompt, voice: /^[A-Za-z]+$/.test(b.voice ?? '') ? b.voice : undefined }),
   video: (c, b) => c.generateVideo({ prompt: b.prompt }),
   music: (c, b) => c.generateMusic({ prompt: b.prompt }),
 };
 
 export function createApp({ store, registry, getGenMedia }) {
   return async function handle(req, res) {
-    const url = new URL(req.url, 'http://localhost');
-    const p = decodeURIComponent(url.pathname);
+    let p;
+    try {
+      p = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    } catch {
+      return send(res, 400, { error: 'bad request' });
+    }
+    if (!LOOPBACK.test(req.headers.host ?? '')) return send(res, 421, { error: 'host not allowed' });
     try {
       if (req.method === 'GET' && (p === '/' || p === '/index.html')) {
         return sendFile(req, res, path.join(ROOT, 'src/client/index.html'));
@@ -135,7 +151,11 @@ export function createApp({ store, registry, getGenMedia }) {
       }
       return send(res, 404, { error: 'not found' });
     } catch (err) {
-      const status = err instanceof GenMediaError ? (err.status && err.status < 500 && err.status !== 429 ? err.status : 502) : 500;
+      const status = !(err instanceof GenMediaError) ? 500
+        : err.code === 'RECITATION' ? 422
+          : err.code === 'TIMEOUT' ? 504
+            : err.status && !err.code ? err.status // ローカルでの入力検証エラー
+              : 502; // 上流(Vertex AI)の失敗はゲートウェイエラーとして返す
       if (!(err instanceof GenMediaError)) console.error(err);
       return send(res, status, { error: err.message, code: err.code ?? null });
     }

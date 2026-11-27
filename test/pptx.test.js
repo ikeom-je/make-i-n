@@ -50,3 +50,14 @@ for (const dir of dataDirs) {
     });
   }
 }
+
+test('経歴の肩書(title)は PPTX にも出力される', async () => {
+  const r = registry();
+  const p = { ...profile, timeline: [{ period: '2020', org: 'X', title: { ja: '部長', en: 'Director' } }] };
+  for (const variant of ['rows', 'cards', 'axis']) {
+    const model = normalizeTalk({ id: 'x', sections: [{ component: 'career-timeline', variant }] }, p, r);
+    const pres = buildPptx(PptxGenJS, model, r, createContext({ lang: 'en', profile: p }));
+    const texts = JSON.stringify(pres.slides[0]._slideObjects.map((o) => o.text));
+    assert.match(texts, /Director/, variant);
+  }
+});

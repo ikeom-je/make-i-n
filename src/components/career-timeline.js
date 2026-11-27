@@ -39,7 +39,7 @@ export default {
       items.forEach((it, i) => {
         const y = 1.15 + i * rowH;
         kit.text(slide, it.period, { x: 0.6, y, w: 1.9, h: rowH, fontSize: 14, bold: true, color: it.highlight ? kit.colors.blue : kit.colors.sub, valign: 'top' });
-        const body = [ctx.t(it.org) + (it.badge ? `  [${ctx.t(it.badge)}]` : ''), ...list(it.items).map((b) => `・${ctx.t(b)}`)].join('\n');
+        const body = [ctx.t(it.org) + (it.badge ? `  [${ctx.t(it.badge)}]` : ''), ...(it.title ? [ctx.t(it.title)] : []), ...list(it.items).map((b) => `・${ctx.t(b)}`)].join('\n');
         kit.text(slide, body, { x: 2.6, y, w: 10.1, h: rowH, fontSize: 11, valign: 'top', bold: false });
       });
       return;
@@ -55,7 +55,7 @@ export default {
       });
       kit.text(slide, it.period, { x: x + 0.15, y: 1.35, w: colW - 0.3, h: 0.4, fontSize: 13, bold: true, color: it.highlight ? kit.colors.blue : kit.colors.sub });
       kit.text(slide, it.org, { x: x + 0.15, y: 1.8, w: colW - 0.3, h: 0.8, fontSize: 15, bold: true, valign: 'top' });
-      const body = [it.badge ? `★ ${ctx.t(it.badge)}` : null, ...list(it.items).map((b) => `・${ctx.t(b)}`)].filter(Boolean).join('\n');
+      const body = [it.badge ? `★ ${ctx.t(it.badge)}` : null, it.title ? ctx.t(it.title) : null, ...list(it.items).map((b) => `・${ctx.t(b)}`)].filter(Boolean).join('\n');
       kit.text(slide, body, { x: x + 0.15, y: 2.65, w: colW - 0.3, h: 4.2, fontSize: 10.5, valign: 'top', color: kit.colors.text });
     });
   },
