@@ -1,6 +1,8 @@
 // CLI スクリプト共通: データストアから talk を読み込み、正規化済みモデルとコンテキストを作る。
 
 import PptxGenJS from 'pptxgenjs';
+import qrcode from 'qrcode-generator';
+import { createQr } from '../src/core/qr.js';
 import { createDefaultRegistry } from '../src/components/index.js';
 import { buildPptx } from '../src/core/pptx.js';
 import { createContext } from '../src/core/render.js';
@@ -12,7 +14,7 @@ export function loadModel(store, talkId, lang) {
   const talk = store.loadTalk(talkId);
   if (!talk) throw new Error(`talk が見つかりません: ${talkId}`);
   const model = normalizeTalk(talk, profile, registry);
-  const ctx = createContext({ lang: lang ?? model.defaultLang, profile, media: store.mediaFor(profile), mode: 'pptx' });
+  const ctx = createContext({ lang: lang ?? model.defaultLang, profile, media: store.mediaFor(profile), mode: 'pptx', qr: createQr(qrcode) });
   return { registry, profile, talk, model, ctx };
 }
 

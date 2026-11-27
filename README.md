@@ -16,7 +16,7 @@ npm install
 ```
 
 ```bash
-mkdir -p data/private && cp env.example data/private/.env   # GOOGLE_CLOUD_PROJECT 等を記入(GenMedia を使う場合のみ)
+mkdir -p data/private && cp .env.example data/private/.env   # GOOGLE_CLOUD_PROJECT 等を記入(GenMedia を使う場合のみ)
 ```
 
 ```bash
@@ -58,6 +58,21 @@ npm run validate
 
 YAML のフローマップ `{ ja: ..., en: ... }` で値にカンマを含めるときは `"..."` で囲んでください(validate が検出します)。
 
+## リンク / QR
+
+`profile.links` に SNS や Web の URL を書くと、`links` パーツが QR とリンクを表示します。
+QR はローカルで生成するので、URL が外部サービスに送られることはありません。
+
+```yaml
+links:
+  github: { type: github, url: "https://github.com/you/repo" }
+  linkedin: { type: linkedin, url: "https://www.linkedin.com/in/you" }
+```
+
+`type` に指定できるのは linkedin / facebook / x / orcid / eight / github / url です。
+表示は variant で選びます: `both`(QR+リンク)/ `qr` / `link`。
+talk から一部だけ出すときは `items: [$.links.github]` のように書きます。
+
 ## テスト
 
 ```bash
@@ -74,7 +89,7 @@ BASE_URL=http://127.0.0.1:8080 npm run test:e2e
 
 ```
 src/core/        i18n・参照解決・talk 検証・メディア解決・HTML 描画・PPTX(ブラウザ/Node 共通)
-src/components/  パーツ(title, career-timeline, big-number, quote, media-hero, genmedia-studio, cta)
+src/components/  パーツ(title, career-timeline, big-number, quote, media-hero, genmedia-studio, cta, links)
 src/client/      画面(ビュー切替・JP|EN・スライド操作・PPTX・GenMedia フォーム)
 src/themes/      base.css(ビューの仕組み)/ google.css(テーマ)
 server/          ローカルサーバー(127.0.0.1)・GenMedia アダプタ(Vertex AI)

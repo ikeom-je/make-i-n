@@ -8,8 +8,9 @@ import quote from './quote.js';
 import mediaHero from './media-hero.js';
 import genmediaStudio from './genmedia-studio.js';
 import cta from './cta.js';
+import links from './links.js';
 
-export const BUILTIN_COMPONENTS = [title, careerTimeline, bigNumber, quote, mediaHero, genmediaStudio, cta];
+export const BUILTIN_COMPONENTS = [title, careerTimeline, bigNumber, quote, mediaHero, genmediaStudio, cta, links];
 
 export function createDefaultRegistry() {
   const registry = createRegistry();

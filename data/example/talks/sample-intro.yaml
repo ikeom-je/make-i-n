@@ -21,3 +21,5 @@ sections:
         - { kind: tts, slot: narration_en }
   - component: cta
     props: { message: $.messages.cta }
+  - component: links
+    variant: both

@@ -16,7 +16,7 @@ data/<private|example>/
 | パス | 役割 | 実行環境 |
 |---|---|---|
 | `src/core/` | i18n・参照解決・talk 検証/正規化・メディア解決・HTML 描画・PPTX 組み立て | ブラウザ + Node(同一 ESM) |
-| `src/components/` | パーツ(title / career-timeline / big-number / quote / media-hero / genmedia-studio / cta)とレジストリ登録 | 同上 |
+| `src/components/` | パーツ(title / career-timeline / big-number / quote / media-hero / genmedia-studio / cta / links)とレジストリ登録 | 同上 |
 | `src/client/` | 画面制御(ビュー切替・言語・スライド操作・PPTX ダウンロード・GenMedia フォーム) | ブラウザ |
 | `src/themes/` | `base.css`(ビューの仕組み)+ テーマ(`google.css`) | ブラウザ |
 | `server/` | 静的配信・talk API・メディア配信(Range 対応)・GenMedia 代理 | Node |
@@ -38,7 +38,7 @@ profile は `profile.(yaml|json|md)` と `profile/<key>.<ext>`(ファイル名�
 { name, description, variants: [...], props: { key: { required } }, defaults: { key: '$.ref' },
   render(props, ctx, section) => html, pptx(slide, props, ctx, kit, section) }
 ```
-`createDefaultRegistry().register(def)` で追加。ctx は `t / tx / esc / mediaEntry / mediaUrl / lang / profile`。
+`createDefaultRegistry().register(def)` で追加。ctx は `t / tx / esc / mediaEntry / mediaUrl / lang / profile / qr`。QR は `src/core/qr.js` がローカル生成(qrcode-generator を `/vendor/qrcode.mjs` で配信、外部 API 不使用)。
 
 ## ビュー
 - 同じ DOM を `body.view-{web|slides|print}` で出し分ける。サイズは単位 `--u`(スライド幅の 1%= `1cqw`)で統一し、

@@ -1,11 +1,7 @@
 import { esc } from '../core/i18n.js';
-import { mediaVisual } from './util.js';
+import { mediaVisual, safeHref } from './util.js';
 
-// javascript: などのスキームを踏ませないよう、リンク先は http(s) / mailto / 相対パスに限る。
-export function safeHref(href) {
-  const h = String(href ?? '').trim();
-  return /^(https?:|mailto:|\/(?!\/)|#)/i.test(h) ? h : null;
-}
+export { safeHref };
 
 function merged(p) {
   return { headline: p.message?.headline, button: p.message?.button, href: p.message?.href, ...Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined)) };
