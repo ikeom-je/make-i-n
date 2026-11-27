@@ -155,3 +155,24 @@ vite.config.ts.timestamp-*
 .nx/cache
 .nx/workspace-data
 .nx/migrate-runs
+
+# ---- make-i-n(自己紹介フレームワーク)----
+# 秘密情報(dot-agent テンプレート準拠)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+secrets/
+# 個人データ(経歴・写真・生成メディア)はリポジトリで管理しない
+data/private/
+# 生成物キャッシュ・エクスポート
+data/*/generated/
+data/*/exports/
+test-e2e/screenshots/
+# OS / エディタ / ハーネス
+.DS_Store
+.worktree/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

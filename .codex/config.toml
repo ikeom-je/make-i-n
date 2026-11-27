@@ -1,0 +1,17 @@
+# Codex CLI 設定のプラクティス例(詳細は README.md の「設定ファイルの方針」)
+# Codex はリポジトリ直下の AGENTS.md をネイティブに読むため、追加のコンテキスト設定は不要。
+# 秘密情報(.env・鍵)の取り扱い禁止は AGENTS.md の共通禁止事項で規定している。
+
+# モデルと effort は AGENTS.md の「モデル割り当て」表に従う。ここには最も多い用途
+# (標準規模の実装・テスト設計)を既定値として置き、軽量修正・一次レビューでは呼び出し側
+# (cli-routing の「呼び出し方」)が -m / -c model_reasoning_effort で上書きする。
+# 非対応エラーのときは同表の次点を呼び出し側で明示指定する
+model = "gpt-6.1-sol"
+model_reasoning_effort = "high"
+
+# worker として使うため、危険操作は承認を求めつつサンドボックス内で自走させる
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = false
