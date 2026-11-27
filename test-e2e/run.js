@@ -9,7 +9,8 @@ import { chromium } from 'playwright';
 
 const base = process.env.BASE_URL ?? 'http://127.0.0.1:8080';
 const talk = process.env.TALK ?? '';
-const outDir = path.resolve('test-e2e/screenshots');
+// スクリーンショットには個人データが写るため、data/private があればその中に保存する。
+const outDir = path.resolve(process.env.OUT_DIR ?? (fs.existsSync('data/private') ? 'data/private/screenshots' : 'test-e2e/screenshots'));
 fs.mkdirSync(outDir, { recursive: true });
 
 const browser = await chromium.launch({ channel: process.env.PW_CHANNEL ?? 'chrome' });

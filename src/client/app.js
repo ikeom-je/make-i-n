@@ -1,7 +1,7 @@
 // ブラウザ側: talk を取得 → 共通コアで描画 → ビュー(web/slides/print)・言語・PPTX・GenMedia を制御する。
 
 import { createDefaultRegistry } from '../components/index.js';
-import { normalizeLang } from '../core/i18n.js';
+import { esc, normalizeLang, t as tr } from '../core/i18n.js';
 import { buildPptx } from '../core/pptx.js';
 import { createContext, renderTalk } from '../core/render.js';
 import { TalkValidationError, normalizeTalk } from '../core/talk.js';
@@ -194,7 +194,7 @@ window.addEventListener('afterprint', () => { if (state.view === 'print') { stat
 async function main() {
   const [{ talks }, status] = await Promise.all([getJson('/api/talks'), getJson('/api/genmedia/status').catch(() => ({}))]);
   state.genmedia = { configured: Boolean(status.configured), reason: status.reason };
-  $('#talk-select').innerHTML = talks.map((t) => `<option value="${t.id}">${t.title?.ja ?? t.title ?? t.id}</option>`).join('');
+  $('#talk-select').innerHTML = talks.map((t) => `<option value="${esc(t.id)}">${esc(tr(t.title, state.lang ?? 'ja') || t.id)}</option>`).join('');
   const id = talks.some((t) => t.id === state.talkId) ? state.talkId : talks[0]?.id;
   if (!id) { showErrors(['talks/ に talk 定義がありません']); return; }
   await loadTalk(id);

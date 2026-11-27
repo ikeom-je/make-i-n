@@ -16,7 +16,7 @@ npm install
 ```
 
 ```bash
-cp env.example .env   # GOOGLE_CLOUD_PROJECT に実値を入れる(GenMedia を使う場合のみ)
+mkdir -p data/private && cp env.example data/private/.env   # GOOGLE_CLOUD_PROJECT 等を記入(GenMedia を使う場合のみ)
 ```
 
 ```bash
@@ -32,6 +32,14 @@ npm start             # → http://127.0.0.1:8080/
 ```bash
 npm run export:pptx -- lab-reunion-2026 en out.pptx
 ```
+
+## 個人データとフレームワークの分離
+
+- リポジトリが管理するのは **フレームワーク(パーツ・表現・ビュー・言語・GenMedia アダプタ)だけ**です。
+- 自己紹介する人のデータ・認証情報・非公開データは **すべて `data/private/` 以下**に置きます
+  (profile / talks / media / generated / exports / screenshots / `.env`)。`data/private/` は .gitignore 済み。
+- データ形式は YAML / JSON(`profile.yaml` または `profile.json`、`talks/<id>.yaml|json`)。
+- `data/example/` は動作確認用の架空人物サンプルです。
 
 ## 自分のデータを作る
 
@@ -52,7 +60,7 @@ YAML のフローマップ `{ ja: ..., en: ... }` で値にカンマを含める
 npm test
 ```
 
-ブラウザ e2e(サーバー起動中に実行。インストール済み Google Chrome を使用。スクショは `test-e2e/screenshots/`):
+ブラウザ e2e(サーバー起動中に実行。インストール済み Google Chrome を使用。スクショは `data/private/screenshots/`、無ければ `test-e2e/screenshots/`):
 
 ```bash
 BASE_URL=http://127.0.0.1:8080 npm run test:e2e

@@ -8,8 +8,11 @@ import { createApp } from './app.js';
 import { ROOT, createDataStore, resolveDataDir } from './data.js';
 import { createVertexClient } from './genmedia/vertex.js';
 
-const envFile = path.join(ROOT, '.env');
-if (fs.existsSync(envFile)) process.loadEnvFile(envFile);
+// 認証情報など非公開の設定は data/private/.env に置く(リポジトリから完全に切り離すため)。
+// 互換のためリポジトリ直下の .env も読む。先に読んだ値が優先される。
+for (const envFile of [path.join(ROOT, 'data/private/.env'), path.join(ROOT, '.env')]) {
+  if (fs.existsSync(envFile)) process.loadEnvFile(envFile);
+}
 
 const store = createDataStore(resolveDataDir());
 const registry = createDefaultRegistry();
