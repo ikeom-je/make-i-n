@@ -71,3 +71,12 @@ test('PPTX には QR 画像とハイパーリンク付き URL が入る', async 
   assert.equal(objs.filter((o) => o._type === 'image').length, 2);
   assert.ok((await pres.write({ outputType: 'nodebuffer' })).length > 1000);
 });
+
+test('項目ごとの show 指定は section の variant より優先される', () => {
+  const out = html('both', [
+    { type: 'github', url: 'https://github.com/a/b', show: 'qr' },
+    { type: 'orcid', url: 'https://orcid.org/0000', show: 'link' },
+  ]);
+  assert.equal((out.match(/<svg/g) ?? []).length, 1, 'QR は github だけ');
+  assert.equal((out.match(/class="link-url"/g) ?? []).length, 1, 'URL 文字列は orcid だけ');
+});

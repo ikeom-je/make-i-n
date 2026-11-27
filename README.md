@@ -72,6 +72,7 @@ links:
 `type` に指定できるのは linkedin / facebook / x / orcid / eight / github / url です。
 表示は variant で選びます: `both`(QR+リンク)/ `qr` / `link`。
 talk から一部だけ出すときは `items: [$.links.github]` のように書きます。
+項目ごとに `show: qr | link | both` を書くと、その項目だけ表示方法を変えられます(variant より優先)。
 
 ## テスト
 
