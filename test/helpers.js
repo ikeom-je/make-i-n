@@ -14,6 +14,10 @@ export const profile = {
   highlights: { n: { label: { ja: '毎週', en: 'Weekly' }, value: '2T', unit: { ja: 'トークン', en: 'tokens' }, notes: [{ ja: '注', en: 'note' }] } },
   messages: { cta: { headline: { ja: '話そう', en: "Let's talk" }, button: { ja: '声かけて', en: 'Say hi' } } },
   narration: { ja: 'こんにちは', en: 'Hello' },
+  links: {
+    github: { type: 'github', url: 'https://github.com/example/repo', label: { ja: 'ソース', en: 'Source' } },
+    linkedin: { type: 'linkedin', url: 'https://www.linkedin.com/in/example' },
+  },
 };
 
 export const talk = {

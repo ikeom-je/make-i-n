@@ -37,6 +37,11 @@ messages:
   motto:
     text: { ja: 小さく作って、大きく届ける。, en: "Build small, ship far." }
 
+links:
+  github: { type: github, url: "https://github.com/example/hanako", label: { ja: GitHub, en: GitHub } }
+  linkedin: { type: linkedin, url: "https://www.linkedin.com/in/example-hanako" }
+  site: { type: url, url: "https://example.com", label: { ja: ブログ, en: Blog } }
+
 narration:
   ja: こんにちは、山田花子です。小さく作って大きく届けるのが好きなエンジニアです。
   en: Hi, I'm Hanako Yamada, an engineer who loves to build small and ship far.

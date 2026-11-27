@@ -55,6 +55,12 @@ export function audioButton(slot, label, ctx, icon = '▶') {
     + `${ready ? '' : ` disabled title="${ctx.tx(UI.notGenerated)}"`}><span class="icon">${icon}</span>${ctx.tx(label)}</button>`;
 }
 
+// javascript: などのスキームを踏ませないよう、リンク先は http(s) / mailto / 相対パスに限る。
+export function safeHref(href) {
+  const h = String(href ?? '').trim();
+  return /^(https?:|mailto:|\/(?!\/)|#)/i.test(h) ? h : null;
+}
+
 export function list(values) {
   return Array.isArray(values) ? values : values ? [values] : [];
 }

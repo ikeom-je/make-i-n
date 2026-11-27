@@ -40,6 +40,9 @@ test('トップページ・共通モジュール・PPTX ライブラリ(ロー�
     assert.equal((await fetch(`${base}/src/core/talk.js`)).status, 200);
     const vendor = await fetch(`${base}/vendor/pptxgen.bundle.js`);
     assert.equal(vendor.status, 200);
+    const qrLib = await fetch(`${base}/vendor/qrcode.mjs`);
+    assert.equal(qrLib.status, 200, 'QR 生成ライブラリもローカル配信');
+    assert.match(qrLib.headers.get('content-type'), /javascript/, 'ES モジュールとして読める MIME で返す');
   });
 });
 

@@ -3,11 +3,14 @@
 import { createDefaultRegistry } from '../components/index.js';
 import { esc, normalizeLang, t as tr } from '../core/i18n.js';
 import { buildPptx } from '../core/pptx.js';
+import { createQr } from '../core/qr.js';
+import qrcode from '/vendor/qrcode.mjs';
 import { createContext, renderTalk } from '../core/render.js';
 import { TalkValidationError, normalizeTalk } from '../core/talk.js';
 import { UI } from '../components/util.js';
 
 const registry = createDefaultRegistry();
+const qr = createQr(qrcode);
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const VIEWS = ['web', 'slides', 'print'];
@@ -38,7 +41,7 @@ function showErrors(errors) {
 }
 
 function ctx() {
-  return createContext({ lang: state.lang, profile: state.data.profile, media: state.data.media, mode: state.view });
+  return createContext({ lang: state.lang, profile: state.data.profile, media: state.data.media, mode: state.view, qr });
 }
 
 function syncUrl() {

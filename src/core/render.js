@@ -3,7 +3,7 @@
 import { esc, normalizeLang, t, tx } from './i18n.js';
 import { mediaUrl } from './media.js';
 
-export function createContext({ lang, profile, media = {}, mediaBase = '/media/', mode = 'web' }) {
+export function createContext({ lang, profile, media = {}, mediaBase = '/media/', mode = 'web', qr = null }) {
   const l = normalizeLang(lang);
   return {
     lang: l,
@@ -13,6 +13,7 @@ export function createContext({ lang, profile, media = {}, mediaBase = '/media/'
     t: (v) => t(v, l),
     tx: (v) => tx(v, l),
     esc,
+    qr, // (text) => { svg, gifDataUrl } | null(未指定なら QR は描かずリンクだけ出す)
     mediaEntry: (slot) => (slot ? media[slot] ?? null : null),
     mediaUrl: (slot, field = 'file') => mediaUrl(media[slot], field, mediaBase),
   };
