@@ -7,7 +7,7 @@ import { GenMediaError } from './genmedia/vertex.js';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
   '.webp': 'image/webp', '.svg': 'image/svg+xml', '.mp4': 'video/mp4', '.mp3': 'audio/mpeg', '.wav': 'audio/wav',
   '.woff2': 'font/woff2',
 };
@@ -16,6 +16,7 @@ const STATIC = {
 };
 const VENDOR = {
   '/vendor/pptxgen.bundle.js': path.join(ROOT, 'node_modules/pptxgenjs/dist/pptxgen.bundle.js'),
+  '/vendor/qrcode.mjs': path.join(ROOT, 'node_modules/qrcode-generator/dist/qrcode.mjs'),
 };
 const MAX_BODY = 1024 * 1024;
 

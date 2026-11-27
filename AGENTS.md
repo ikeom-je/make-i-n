@@ -137,7 +137,7 @@ Antigravity はモデルID自体に effort を含む(`agy models` で一覧)。�
 - ビルド: 不要 / 起動: `npm start` / テスト: `npm test`(グリーン判定の正式コマンド)/ 検証: `npm run validate`
 - e2e(任意・サーバー起動中): `BASE_URL=http://127.0.0.1:8080 npm run test:e2e`
 - **分離原則**: リポジトリはフレームワーク(パーツ・表現・ビュー・言語)のみ。個人データ・credentials・非公開データは
-  すべて `data/private/`(git 管理外。`.env` も `data/private/.env`。テンプレートは env.example)
+  すべて `data/private/`(git 管理外。`.env` も `data/private/.env`。テンプレートは .env.example)
 - ドキュメントのリンク検証: `./tools/check-links.sh && ./tools/test-check-links.sh`
 - 運用は issue ベース(1 bolt = 1 issue、[git.md](docs/process/git.md))。日付ベースの
   ドキュメントは作らない(記録は issue / PR、知見は [docs/knowledge/](docs/knowledge/README.md))

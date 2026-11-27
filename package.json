@@ -17,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "pptxgenjs": "^4.0.1",
+    "qrcode-generator": "^2.0.4",
     "yaml": "^2.9.1"
   },
   "devDependencies": {
