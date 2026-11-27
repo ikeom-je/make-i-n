@@ -1,0 +1,8 @@
+id: sample-30s
+order: 2
+title: { ja: サンプル30秒版, en: Sample 30s }
+sections:
+  - component: title
+    variant: center
+  - component: cta
+    props: { message: $.messages.cta }

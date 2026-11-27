@@ -1,0 +1,23 @@
+id: sample-intro
+order: 1
+title: { ja: サンプル自己紹介, en: Sample intro }
+defaultLang: ja
+sections:
+  - component: title
+    variant: split
+    props: { visual: portrait, music: theme, narration: narration }
+  - component: career-timeline
+    variant: rows
+  - component: big-number
+    variant: plain
+    props: { highlight: $.highlights.deploys }
+  - component: quote
+    props: { text: $.messages.motto.text, by: $.name }
+  - component: genmedia-studio
+    props:
+      cards:
+        - { kind: image, slot: portrait }
+        - { kind: music, slot: theme }
+        - { kind: tts, slot: narration_en }
+  - component: cta
+    props: { message: $.messages.cta }
