@@ -1,0 +1,29 @@
+# brief.md から npm run intake:build で生成(手で直す場合は brief.md の plan を直して再生成する)
+# 目安 115 秒
+id: sample-lt
+order: 3
+title:
+  ja: サンプル LT(brief から生成)
+  en: Sample LT (built from brief)
+theme: google
+defaultLang: ja
+sections:
+  - component: title
+    variant: center
+    props:
+      photo: photo
+  - component: career-timeline
+    variant: keywords
+  - component: big-number
+    variant: plain
+    props:
+      highlight: $.highlights.deploys
+  - component: links
+    variant: qr
+    props:
+      items:
+        - $.links.linkedin
+        - $.links.github
+      heading:
+        ja: つながりましょう
+        en: Let's connect

@@ -47,6 +47,10 @@ narration:
   en: Hi, I'm Hanako Yamada, an engineer who loves to build small and ship far.
 
 media:
+  photo:
+    kind: image
+    label: { ja: 顔写真, en: Photo }
+    file: media/photo.jpg
   portrait:
     kind: image
     aspectRatio: "1:1"

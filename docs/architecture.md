@@ -20,7 +20,8 @@ data/<private|example>/
 | `src/client/` | 画面制御(ビュー切替・言語・スライド操作・PPTX ダウンロード・GenMedia フォーム) | ブラウザ |
 | `src/themes/` | `base.css`(ビューの仕組み)+ テーマ(`google.css`) | ブラウザ |
 | `server/` | 静的配信・talk API・メディア配信(Range 対応)・GenMedia 代理 | Node |
-| `scripts/` | `validate`(全 talk 検証)・`export-pptx`(CLI 書き出し) | Node |
+| `scripts/` | `validate`(全 talk 検証)・`export-pptx`(CLI 書き出し)・`intake`(対話インテークの init / note / check / build) | Node |
+| `templates/intake/` | `intake init` が data/private に置く雛形 | — |
 
 ## データモデル
 個人データは `data/private/` に YAML / JSON / JSONL / Markdown で置く(`server/formats.js` が読む)。

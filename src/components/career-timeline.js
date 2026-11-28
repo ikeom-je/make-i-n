@@ -1,21 +1,24 @@
 import { list } from './util.js';
 
-function itemHtml(item, ctx) {
+function itemHtml(item, ctx, variant) {
   const bullets = list(item.items).map((b) => `<li>${ctx.tx(b)}</li>`).join('');
+  const points = variant === 'keywords'
+    ? (bullets ? `<ul class="tl-keywords">${bullets}</ul>` : '')
+    : (bullets ? `<ul class="tl-points">${bullets}</ul>` : '');
   return `<article class="tl-item${item.highlight ? ' is-highlight' : ''}">
   <div class="tl-period">${ctx.tx(item.period)}</div>
   <div class="tl-body">
     <h3 class="tl-org">${ctx.tx(item.org)}${item.badge ? ` <span class="tl-badge">${ctx.tx(item.badge)}</span>` : ''}</h3>
     ${item.title ? `<p class="tl-title">${ctx.tx(item.title)}</p>` : ''}
-    ${bullets ? `<ul class="tl-points">${bullets}</ul>` : ''}
+    ${points}
   </div>
 </article>`;
 }
 
 export default {
   name: 'career-timeline',
-  description: '経歴タイムライン。rows(行)/ cards(カード)/ axis(横軸)',
-  variants: ['rows', 'cards', 'axis'],
+  description: '経歴タイムライン。rows(行)/ cards(カード)/ axis(横軸)/ keywords(キーワードのチップ。短時間の LT 向け)',
+  variants: ['rows', 'cards', 'axis', 'keywords'],
   props: {
     items: { required: true, description: 'timeline 配列' },
     heading: {},
@@ -23,10 +26,10 @@ export default {
   },
   defaults: { items: '$.timeline', heading: { ja: '経歴', en: 'Career' } },
 
-  render(p, ctx) {
+  render(p, ctx, section) {
     const items = list(p.items).slice(0, p.limit ?? undefined);
     return `${p.heading ? `<h2 class="section-heading">${ctx.tx(p.heading)}</h2>` : ''}
-<div class="timeline">${items.map((it) => itemHtml(it, ctx)).join('')}</div>`;
+<div class="timeline">${items.map((it) => itemHtml(it, ctx, section.variant)).join('')}</div>`;
   },
 
   pptx(slide, p, ctx, kit, section) {
@@ -55,7 +58,8 @@ export default {
       });
       kit.text(slide, it.period, { x: x + 0.15, y: 1.35, w: colW - 0.3, h: 0.4, fontSize: 13, bold: true, color: it.highlight ? kit.colors.blue : kit.colors.sub });
       kit.text(slide, it.org, { x: x + 0.15, y: 1.8, w: colW - 0.3, h: 0.8, fontSize: 15, bold: true, valign: 'top' });
-      const body = [it.badge ? `★ ${ctx.t(it.badge)}` : null, it.title ? ctx.t(it.title) : null, ...list(it.items).map((b) => `・${ctx.t(b)}`)].filter(Boolean).join('\n');
+      const sep = section.variant === 'keywords' ? '#' : '・';
+      const body = [it.badge ? `★ ${ctx.t(it.badge)}` : null, it.title ? ctx.t(it.title) : null, ...list(it.items).map((b) => `${sep}${ctx.t(b)}`)].filter(Boolean).join('\n');
       kit.text(slide, body, { x: x + 0.15, y: 2.65, w: colW - 0.3, h: 4.2, fontSize: 10.5, valign: 'top', color: kit.colors.text });
     });
   },

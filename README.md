@@ -45,11 +45,35 @@ npm run export:pptx -- lab-reunion-2026 en out.pptx
   - `talks/<id>.(yaml|json|md)`(id はファイル名)
 - `data/example/` は動作確認用の架空人物サンプルです。
 
+## AI エージェントと対話してデータを作る
+
+Claude Code / Codex / Gemini などに「自己紹介を作りたい」と話しかけると、エージェントが
+[docs/intake.md](docs/intake.md) の手順で質問し、答えを `data/private/` に書き出します。
+
+- `profile.yaml`(基本情報・リンク・顔写真)、`profile/timeline.jsonl`(学歴・職歴のキーワード)
+- `context/requests.jsonl`(要望・表現の希望を1行ずつ)
+- `brief.md`(上を整理した構造化 Markdown。frontmatter の `plan` から talk を生成)
+
+```bash
+npm run intake -- init
+```
+
+```bash
+npm run intake -- check
+```
+
+```bash
+npm run intake:build
+```
+
+`check` は TODO のまま残っている項目や、顔写真・リンクの不足を一覧にします。`build` は持ち時間を超えていれば警告します。
+
 ## 自分のデータを作る
 
 1. `data/example/` を `data/private/` にコピーし、`profile.yaml` を書き換える(`data/private/` は git 管理外)。
 2. `data/private/talks/<id>.yaml` に並べ方を書く。参照は `$.highlights.tokens` のように profile のパス。
 3. 既存素材は `data/private/media/` に置き、`profile.yaml` の `media.<slot>.file` で指定。無ければプレースホルダー表示。
+   顔写真は `media.photo` に指定し、talk の title に `photo: photo` と書くと小さな丸枠で表示されます(無ければ枠だけ)。
 4. 検証:
 
 ```bash

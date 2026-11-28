@@ -61,3 +61,11 @@ test('経歴の肩書(title)は PPTX にも出力される', async () => {
     assert.match(texts, /Director/, variant);
   }
 });
+
+test('顔写真の枠つきタイトルも PPTX に書き出せる(写真が無ければ丸い枠だけ)', async () => {
+  const r = registry();
+  const model = normalizeTalk({ id: 'p', sections: [{ component: 'title', props: { photo: 'photo' } }] }, profile, r);
+  const pres = buildPptx(PptxGenJS, model, r, createContext({ lang: 'ja', profile }));
+  assert.ok(pres.slides[0]._slideObjects.some((o) => o.shape === 'ellipse' || o.options?.shape === 'ellipse' || JSON.stringify(o).includes('ellipse')));
+  await pres.write({ outputType: 'nodebuffer' });
+});
