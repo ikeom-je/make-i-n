@@ -130,7 +130,9 @@ export function createApp({ store, registry, getGenMedia }) {
       }
       if (req.method === 'GET' && p === '/api/genmedia/status') {
         const g = getGenMedia();
-        return send(res, 200, { configured: Boolean(g.client), reason: g.error ?? null, models: g.client?.model ?? null });
+        if (!g.client) return send(res, 200, { configured: false, authenticated: false, reason: g.error ?? null, models: null });
+        const auth = g.client.checkAuth ? await g.client.checkAuth() : { ok: true, reason: null };
+        return send(res, 200, { configured: true, authenticated: auth.ok, reason: auth.reason, models: g.client.model ?? null });
       }
       if (req.method === 'POST' && p === '/api/genmedia') {
         if (!sameOrigin(req)) return send(res, 403, { error: 'cross-origin request rejected' });

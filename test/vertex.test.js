@@ -151,3 +151,59 @@ test('動画生成が失敗状態で終わればエラーになる', async () =>
   const f = fakeFetch((call) => (call.method === 'POST' ? json({ id: 'i' }) : json({ id: 'i', status: 'failed', error: { message: 'quota' } })));
   await assert.rejects(client(f).generateVideo({ prompt: 'x' }), (e) => e.code === 'FAILED');
 });
+
+test('gcloud は GCLOUD_BIN → PATH → Homebrew / SDK の既定パスの順に探す', async () => {
+  const { findGcloud } = await import('../server/genmedia/vertex.js');
+  const has = (...paths) => (p) => paths.includes(p);
+  assert.equal(findGcloud({ env: { GCLOUD_BIN: '/x/gcloud' }, exists: has('/x/gcloud') }), '/x/gcloud');
+  assert.equal(findGcloud({ env: { PATH: '/a:/b' }, exists: has('/b/gcloud', '/opt/homebrew/bin/gcloud') }), '/b/gcloud');
+  assert.equal(findGcloud({ env: { PATH: '/usr/bin' }, exists: has('/opt/homebrew/bin/gcloud') }), '/opt/homebrew/bin/gcloud', 'PATH が短くても Homebrew の場所で見つかる');
+  assert.equal(findGcloud({ env: { PATH: '/usr/bin' }, home: '/h', exists: has('/h/google-cloud-sdk/bin/gcloud') }), '/h/google-cloud-sdk/bin/gcloud');
+  assert.equal(findGcloud({ env: { PATH: '/usr/bin' }, exists: () => false }), null);
+});
+
+test('gcloud が無ければ、インストールを促すエラーになる', async () => {
+  const { gcloudTokenProvider } = await import('../server/genmedia/vertex.js');
+  const getToken = gcloudTokenProvider({ locate: () => null });
+  await assert.rejects(getToken(), (e) => e.code === 'NO_GCLOUD' && /インストール/.test(e.message));
+});
+
+test('トークンはキャッシュし、invalidate 後は取り直す', async () => {
+  const { gcloudTokenProvider } = await import('../server/genmedia/vertex.js');
+  let n = 0;
+  const exec = (bin, args, opts, cb) => cb(null, `tok-${++n}\n`);
+  const getToken = gcloudTokenProvider({ locate: () => '/g', exec });
+  assert.equal(await getToken(), 'tok-1');
+  assert.equal(await getToken(), 'tok-1');
+  getToken.invalidate();
+  assert.equal(await getToken(), 'tok-2');
+});
+
+test('401 のときはトークンを取り直して1回だけ再試行する', async () => {
+  let n = 0;
+  const getToken = async () => `tok-${n}`;
+  getToken.invalidate = () => { n++; };
+  const f = fakeFetch((call, i) => (i === 1 ? json({}, 401)
+    : json({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'image/png', data: b64('ok') } }] } }] })));
+  const out = await createVertexClient({ project: 'p', getToken, fetchImpl: f, sleep: async () => {} }).generateImage({ prompt: 'x' });
+  assert.equal(out.data.toString(), 'ok');
+  assert.deepEqual(f.calls.map((c) => c.headers.Authorization), ['Bearer tok-0', 'Bearer tok-1']);
+});
+
+test('取り直しても 401 なら、それ以上は再試行しない', async () => {
+  const getToken = async () => 'tok';
+  getToken.invalidate = () => {};
+  const f = fakeFetch(() => json({}, 401));
+  await assert.rejects(createVertexClient({ project: 'p', getToken, fetchImpl: f, sleep: async () => {} }).generateImage({ prompt: 'x' }), (e) => e.status === 401);
+  assert.equal(f.calls.length, 2);
+});
+
+test('checkAuth はトークンが取れるかだけを確かめ、課金 API は呼ばない', async () => {
+  const f = fakeFetch(() => { throw new Error('should not be called'); });
+  const ok = await createVertexClient({ project: 'p', getToken: async () => 't', fetchImpl: f }).checkAuth();
+  assert.deepEqual(ok, { ok: true, reason: null });
+  const ng = await createVertexClient({ project: 'p', getToken: async () => { throw new GenMediaError('no gcloud', { code: 'NO_GCLOUD' }); }, fetchImpl: f }).checkAuth();
+  assert.equal(ng.ok, false);
+  assert.equal(ng.code, 'NO_GCLOUD');
+  assert.equal(f.calls.length, 0);
+});

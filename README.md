@@ -10,6 +10,9 @@
 ## ローカル起動
 
 前提: Node.js 22 以上。GenMedia を使う場合のみ gcloud CLI(`gcloud auth login` 済み)。
+gcloud は `brew install --cask gcloud-cli` で入れ、`gcloud auth login` と `gcloud config set project <ID>` を実行します。
+サーバーは PATH に加えて Homebrew や SDK の既定の場所でも gcloud を探します。別の場所にある場合は `GCLOUD_BIN` で指定してください。
+準備ができていないと、舞台裏カードに理由が表示されます(`/api/genmedia/status` の `authenticated`)。
 
 ```bash
 npm install
