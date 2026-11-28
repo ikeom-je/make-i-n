@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Self Intro</title>
+  <!-- フォントは別々に読む(片方のファミリーが取得できなくても、もう片方は効くように) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/src/themes/base.css">
+  <link rel="stylesheet" id="theme-css" href="/src/themes/google.css">
+  <script src="/vendor/pptxgen.bundle.js" defer></script>
+</head>
+<body class="view-web">
+  <header class="toolbar" aria-label="toolbar">
+    <label class="talk-picker"><span class="sr-only">Talk</span><select id="talk-select"></select></label>
+    <div class="view-switch" role="group" aria-label="view">
+      <button type="button" class="pill pill-ghost" data-view="web">Web</button>
+      <button type="button" class="pill pill-ghost" data-view="slides">Slides</button>
+      <button type="button" class="pill pill-ghost" data-action="print">PDF</button>
+      <button type="button" class="pill pill-ghost" data-action="pptx">PPTX</button>
+    </div>
+    <div class="lang-switch" role="group" aria-label="language">
+      <button type="button" data-lang="ja">JP</button><span aria-hidden="true">|</span><button type="button" data-lang="en">EN</button>
+    </div>
+  </header>
+  <div id="errors" class="errors" hidden></div>
+  <main id="deck"></main>
+  <nav class="slide-nav" aria-label="slides">
+    <button type="button" class="pill pill-ghost" data-nav="prev" aria-label="previous">‹</button>
+    <span id="slide-counter">1 / 1</span>
+    <button type="button" class="pill pill-ghost" data-nav="next" aria-label="next">›</button>
+    <button type="button" class="pill pill-ghost" data-nav="fullscreen" aria-label="fullscreen">⛶</button>
+  </nav>
+  <script type="module" src="/src/client/app.js"></script>
+</body>
+</html>

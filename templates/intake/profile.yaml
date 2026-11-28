@@ -1,0 +1,17 @@
+# 自己紹介する人の基本情報(data/private は git 管理外)。未確定の値は TODO と書いておくと intake check が拾う。
+name: { ja: TODO, en: TODO }
+affiliation: { ja: TODO, en: TODO }
+role: { ja: TODO, en: TODO }
+tagline: { ja: TODO, en: TODO }
+
+# 経歴は profile/timeline.jsonl に1行1項目で書く(学校名・学科名・職ごとのキーワード)
+
+links:
+  linkedin: { type: linkedin, url: "https://www.linkedin.com/in/TODO" }
+  github: { type: github, url: "https://github.com/TODO" }
+
+media:
+  photo:
+    kind: image
+    label: { ja: 顔写真, en: Photo }
+    file: media/photo.jpg

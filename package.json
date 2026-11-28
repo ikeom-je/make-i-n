@@ -1,0 +1,28 @@
+{
+  "name": "make-i-n",
+  "version": "0.1.0",
+  "private": true,
+  "description": "自己紹介フレームワーク: 1つのプロフィール × 複数のトーク定義 × 複数のビュー(web / slides / print / PPTX)",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "test:e2e": "node test-e2e/run.js",
+    "export:pptx": "node scripts/export-pptx.js",
+    "validate": "node scripts/validate.js",
+    "intake": "node scripts/intake.js",
+    "intake:build": "node scripts/intake.js build"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "pptxgenjs": "^4.0.1",
+    "qrcode-generator": "^2.0.4",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.1"
+  }
+}

@@ -1,0 +1,68 @@
+# サンプル(架空の人物)。data/private/profile.yaml を同じ形式で作ると、そちらが優先される。
+name: { ja: 山田 花子, en: Hanako Yamada }
+affiliation: { ja: Example Corp., en: Example Corp. }
+role: { ja: ソフトウェアエンジニア, en: Software Engineer }
+tagline: { ja: 小さく作って、大きく届ける, en: "Build small, ship far" }
+
+timeline:
+  - id: univ
+    period: 2010–2014
+    org: { ja: 〇〇大学 情報工学科, en: B.S. in Computer Science }
+    items:
+      - { ja: 分散システムの研究, en: Distributed systems research }
+  - id: startup
+    period: 2014–2020
+    org: { ja: スタートアップ, en: Startup }
+    items:
+      - { ja: Webサービスの立ち上げ, en: Launched a web service from scratch }
+  - id: now
+    period: 2020–
+    org: { ja: Example Corp., en: Example Corp. }
+    highlight: true
+    items:
+      - { ja: プラットフォームチームのリード, en: Leading the platform team }
+
+highlights:
+  deploys:
+    label: { ja: 昨年のデプロイ回数, en: Deploys last year }
+    value: "1,200"
+    unit: { ja: 回, en: times }
+    notes:
+      - { ja: 1日あたり約3回, en: About three a day }
+
+messages:
+  cta:
+    headline: { ja: 一緒に作りましょう。, en: "Let's build together." }
+    button: { ja: 話しかけてください →, en: "Say hi →" }
+  motto:
+    text: { ja: 小さく作って、大きく届ける。, en: "Build small, ship far." }
+
+links:
+  github: { type: github, url: "https://github.com/example/hanako", label: { ja: GitHub, en: GitHub } }
+  linkedin: { type: linkedin, url: "https://www.linkedin.com/in/example-hanako" }
+  site: { type: url, url: "https://example.com", label: { ja: ブログ, en: Blog } }
+
+narration:
+  ja: こんにちは、山田花子です。小さく作って大きく届けるのが好きなエンジニアです。
+  en: Hi, I'm Hanako Yamada, an engineer who loves to build small and ship far.
+
+media:
+  photo:
+    kind: image
+    label: { ja: 顔写真, en: Photo }
+    file: media/photo.jpg
+  portrait:
+    kind: image
+    aspectRatio: "1:1"
+    prompt: A friendly flat illustration of a laptop with colorful building blocks, white background, no text.
+  theme:
+    kind: music
+    prompt: A light, cheerful instrumental jingle, 20 seconds, no vocals.
+  narration_en:
+    kind: tts
+    voice: Puck
+    text: $.narration.en
+  narration_ja:
+    kind: tts
+    voice: Puck
+    text: $.narration.ja
