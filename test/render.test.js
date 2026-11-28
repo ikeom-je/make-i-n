@@ -75,3 +75,17 @@ test('profile の参照はプロトタイプのプロパティ($.constructor な
   const { ok } = validateTalk({ id: 'x', sections: [{ component: 'quote', props: { text: '$.constructor' } }] }, profile, registry());
   assert.equal(ok, false);
 });
+
+test('顔写真が無いときは丸枠のプレースホルダー、あれば画像を表示する', () => {
+  const r = registry();
+  const model = normalizeTalk({ id: 'p', sections: [{ component: 'title', props: { photo: 'photo' } }] }, profile, r);
+  const empty = renderTalk(model, r, createContext({ lang: 'ja', profile }));
+  assert.match(empty, /class="title-photo is-empty"/);
+  const withPhoto = renderTalk(model, r, createContext({ lang: 'en', profile, media: { photo: { slot: 'photo', kind: 'image', file: 'media/face.jpg' } } }));
+  assert.match(withPhoto, /<img src="\/media\/media\/face\.jpg" alt="Taro Yamada">/);
+});
+
+test('経歴の keywords 表現は項目をチップとして並べる', () => {
+  const out = html('ja', {}, { id: 'k', sections: [{ component: 'career-timeline', variant: 'keywords' }] });
+  assert.match(out, /<ul class="tl-keywords"><li>研究<\/li><\/ul>/);
+});

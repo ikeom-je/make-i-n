@@ -12,7 +12,9 @@
     "test": "node --test \"test/**/*.test.js\"",
     "test:e2e": "node test-e2e/run.js",
     "export:pptx": "node scripts/export-pptx.js",
-    "validate": "node scripts/validate.js"
+    "validate": "node scripts/validate.js",
+    "intake": "node scripts/intake.js",
+    "intake:build": "node scripts/intake.js build"
   },
   "license": "MIT",
   "dependencies": {

@@ -1,0 +1,3 @@
+// 1行1項目。period / org(学校名・学科名や会社名)/ items(キーワード)/ highlight(今を強調)
+{"id":"univ","period":"TODO","org":{"ja":"TODO大学 TODO学部 TODO学科","en":"TODO"},"items":[{"ja":"TODO","en":"TODO"}]}
+{"id":"job1","period":"TODO","org":{"ja":"TODO","en":"TODO"},"items":[{"ja":"TODO","en":"TODO"}],"highlight":true}

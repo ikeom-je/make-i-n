@@ -49,7 +49,7 @@ test('トップページ・共通モジュール・PPTX ライブラリ(ロー�
 test('talk 一覧と talk 本体(profile・メディア解決済み)を返す', async () => {
   await withServer({ client: null }, async (base) => {
     const { talks } = await (await fetch(`${base}/api/talks`)).json();
-    assert.deepEqual(talks.map((t) => t.id), ['sample-intro', 'sample-30s']);
+    assert.deepEqual(talks.map((t) => t.id), ['sample-intro', 'sample-30s', 'sample-lt']);
     const body = await (await fetch(`${base}/api/talks/sample-intro`)).json();
     assert.equal(body.talk.id, 'sample-intro');
     assert.equal(body.profile.name.en, 'Hanako Yamada');

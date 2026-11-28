@@ -164,3 +164,20 @@ body.view-web .section + .section { border-top: 1px solid var(--line); }
 .link-note { color: var(--sub); font-size: calc(var(--u) * 1.1); }
 .link-card.t-github .link-type { color: var(--text); } .link-card.t-linkedin .link-type { color: #0A66C2; }
 .c-links .section-inner { align-items: center; text-align: center; }
+
+/* Title: 顔写真 */
+.title-head { display: flex; align-items: center; gap: calc(var(--u) * 2.4); }
+.c-title.v-center .title-head { flex-direction: column; }
+.title-photo { flex: none; width: calc(var(--u) * 10); height: calc(var(--u) * 10); border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 calc(var(--u) * .35) #fff, 0 0 0 calc(var(--u) * .6) var(--blue); }
+.title-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.title-photo.is-empty { display: grid; place-items: center; background: var(--soft); box-shadow: none; border: 2px dashed var(--line); color: var(--sub); font-size: calc(var(--u) * 1.1); }
+
+/* CareerTimeline: keywords */
+.v-keywords .timeline { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); grid-auto-flow: column; }
+.v-keywords .tl-item { background: var(--soft); border: 1px solid var(--line); border-radius: calc(var(--u) * 1.4); padding: calc(var(--u) * 1.5); }
+.v-keywords .tl-item.is-highlight { background: var(--blue-soft); border: 2px solid var(--blue); }
+.v-keywords .tl-period { margin-bottom: calc(var(--u) * .8); }
+.tl-keywords { list-style: none; padding: 0; margin: calc(var(--u) * 1) 0 0; display: flex; flex-wrap: wrap; gap: calc(var(--u) * .6); }
+.tl-keywords li { font-size: calc(var(--u) * 1.15); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: .2em .8em; line-height: 1.4; }
+.tl-item.is-highlight .tl-keywords li { border-color: rgba(26,115,232,.35); color: var(--blue); }
+@media (max-width: 720px) { .v-keywords .timeline { grid-auto-flow: row; grid-template-columns: 1fr; } }

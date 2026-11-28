@@ -5,7 +5,7 @@ defaultLang: ja
 sections:
   - component: title
     variant: split
-    props: { visual: portrait, music: theme, narration: narration }
+    props: { visual: portrait, photo: photo, music: theme, narration: narration }
   - component: career-timeline
     variant: rows
   - component: big-number
