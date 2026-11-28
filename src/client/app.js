@@ -216,7 +216,8 @@ window.addEventListener('afterprint', () => { if (state.view === 'print') { stat
 
 async function main() {
   const [{ talks }, status] = await Promise.all([getJson('/api/talks'), getJson('/api/genmedia/status').catch(() => ({}))]);
-  state.genmedia = { configured: Boolean(status.configured), reason: status.reason };
+  // 認証まで済んでいないと「生成」は必ず失敗するので、押す前にカードへ理由を出す。
+  state.genmedia = { configured: Boolean(status.configured && status.authenticated !== false), reason: status.reason };
   $('#talk-select').innerHTML = talks.map((t) => `<option value="${esc(t.id)}">${esc(tr(t.title, state.lang ?? 'ja') || t.id)}</option>`).join('');
   const id = talks.some((t) => t.id === state.talkId) ? state.talkId : talks[0]?.id;
   if (!id) { showErrors(['talks/ に talk 定義がありません']); return; }

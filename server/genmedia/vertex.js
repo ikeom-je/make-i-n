@@ -1,6 +1,9 @@
 // Vertex AI の GenMedia 代理呼び出し。トークンはサーバー側だけで扱い、ブラウザには出さない。
 
 import { execFile } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { parsePcmMime, pcmToWav } from './wav.js';
 
 export class GenMediaError extends Error {
@@ -12,19 +15,42 @@ export class GenMediaError extends Error {
   }
 }
 
-export function gcloudTokenProvider({ ttlMs = 5 * 60 * 1000, exec = execFile } = {}) {
+// GUI や launchd から起動したサーバーは PATH が短く、Homebrew の gcloud が見つからないことがあるため、
+// 既定のインストール先も探す。
+export function findGcloud({ env = process.env, exists = fs.existsSync, home = os.homedir() } = {}) {
+  if (env.GCLOUD_BIN) return exists(env.GCLOUD_BIN) ? env.GCLOUD_BIN : null;
+  const fromPath = (env.PATH ?? '').split(path.delimiter).filter(Boolean).map((d) => path.join(d, 'gcloud'));
+  const known = [
+    '/opt/homebrew/bin/gcloud',
+    '/usr/local/bin/gcloud',
+    '/opt/homebrew/share/google-cloud-sdk/bin/gcloud',
+    '/usr/local/share/google-cloud-sdk/bin/gcloud',
+    path.join(home, 'google-cloud-sdk/bin/gcloud'),
+  ];
+  return [...fromPath, ...known].find((p) => exists(p)) ?? null;
+}
+
+export function gcloudTokenProvider({ ttlMs = 5 * 60 * 1000, exec = execFile, locate = findGcloud } = {}) {
   let cached = null;
-  return async () => {
+  const getToken = async () => {
     if (cached && cached.expires > Date.now()) return cached.token;
+    const bin = locate();
+    if (!bin) {
+      throw new GenMediaError('gcloud が見つかりません(Google Cloud CLI をインストールするか、GCLOUD_BIN にパスを指定)', { code: 'NO_GCLOUD' });
+    }
     const token = await new Promise((resolve, reject) => {
-      exec('gcloud', ['auth', 'print-access-token'], { timeout: 30_000 }, (err, stdout) => {
+      exec(bin, ['auth', 'print-access-token'], { timeout: 30_000 }, (err, stdout) => {
         if (err) reject(new GenMediaError('gcloud auth print-access-token に失敗しました(gcloud auth login 済みか確認)', { code: 'NO_TOKEN', detail: String(err.message) }));
         else resolve(String(stdout).trim());
       });
     });
+    if (!token) throw new GenMediaError('gcloud からトークンが返りませんでした(gcloud auth login を実行)', { code: 'NO_TOKEN' });
     cached = { token, expires: Date.now() + ttlMs };
     return token;
   };
+  // 期限切れ・取り消しで 401 になったとき、キャッシュを捨てて取り直せるようにする。
+  getToken.invalidate = () => { cached = null; };
+  return getToken;
 }
 
 const RETRY_STATUS = new Set([429, 503]);
@@ -52,7 +78,8 @@ export function createVertexClient({
   };
 
   async function request(method, url, body, extraHeaders = {}) {
-    const token = await getToken();
+    let token = await getToken();
+    let refreshed = false;
     for (let attempt = 0; ; attempt++) {
       const res = await fetchImpl(url, {
         method,
@@ -65,6 +92,13 @@ export function createVertexClient({
         body: body ? JSON.stringify(body) : undefined,
       });
       if (res.ok) return res;
+      if (res.status === 401 && !refreshed && typeof getToken.invalidate === 'function') {
+        refreshed = true;
+        getToken.invalidate();
+        token = await getToken();
+        attempt--;
+        continue;
+      }
       if (RETRY_STATUS.has(res.status) && attempt < maxRetries) {
         await sleep(retryBaseMs * 2 ** attempt);
         continue;
@@ -91,6 +125,16 @@ export function createVertexClient({
   return {
     base,
     model,
+
+    // 生成ボタンを押す前に、トークンが取れる状態かを確かめる(課金 API は呼ばない)。
+    async checkAuth() {
+      try {
+        await getToken();
+        return { ok: true, reason: null };
+      } catch (err) {
+        return { ok: false, reason: err.message, code: err.code ?? null };
+      }
+    },
 
     async generateImage({ prompt, aspectRatio = '16:9' }) {
       const json = await generateContent(model.image, {

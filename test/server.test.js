@@ -165,3 +165,17 @@ test('範囲外の Range 指定は 416', async () => {
     assert.equal((await fetch(`${base}/media/media/clip.mp4`, { headers: { Range: 'bytes=50-60' } })).status, 416);
   });
 });
+
+test('status は認証の準備状況も返す(gcloud 未ログインなら authenticated: false と理由)', async () => {
+  const notReady = { model: {}, checkAuth: async () => ({ ok: false, reason: 'gcloud が見つかりません' }) };
+  await withServer({ client: notReady }, async (base) => {
+    const s = await (await fetch(`${base}/api/genmedia/status`)).json();
+    assert.equal(s.configured, true);
+    assert.equal(s.authenticated, false);
+    assert.match(s.reason, /gcloud/);
+  });
+  const ready = { model: {}, checkAuth: async () => ({ ok: true, reason: null }) };
+  await withServer({ client: ready }, async (base) => {
+    assert.equal((await (await fetch(`${base}/api/genmedia/status`)).json()).authenticated, true);
+  });
+});
